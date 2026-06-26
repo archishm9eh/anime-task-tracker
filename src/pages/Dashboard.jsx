@@ -1,272 +1,295 @@
-import { motion } from 'framer-motion'
-import {
-  Activity,
-  BookOpen,
-  Briefcase,
-  ChevronRight,
-  Circle,
-  Sparkles,
-} from 'lucide-react'
+import React, { useState, useEffect } from 'react';
 
-const panelVariants = {
-  hidden: { opacity: 0, y: 28 },
-  visible: (index) => ({
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.55,
-      delay: index * 0.12,
-      ease: [0.22, 1, 0.36, 1],
+export default function Dashboard() {
+  const [activeScreen, setActiveScreen] = useState('goals');
+  // Countdown initialized to 15 minutes (900 seconds)
+  const [workoutSeconds, setWorkoutSeconds] = useState(900); 
+
+  // Fixed Tactical Countdown Engine
+  useEffect(() => {
+    if (activeScreen !== 'workout') return;
+    
+    const timer = setInterval(() => {
+      setWorkoutSeconds((prev) => {
+        if (prev <= 0) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1; // Properly ticking backward now
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [activeScreen]);
+
+  const formatTime = (totalSeconds) => {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  const systemDialogue = {
+    goals: {
+      prompt: "TARGETS LOCATED.",
+      subText: "ELIMINATE COGNITIVE OBJECTIVES BEFORE MIDNIGHT."
     },
-  }),
-}
+    initial: {
+      prompt: "VITAL SIGNALS STABLE.",
+      subText: "DRINK WATER & CLEAR THE SYSTEM CORE IMMEDIATELY."
+    },
+    workout: {
+      prompt: "CONDITIONING MODE ACTIVE.",
+      subText: "BREAK TRAINING LIMITS FROM THIS POINT FORWARD."
+    },
+    schedule: {
+      prompt: "TIMELINE ROUTE ACQUIRED.",
+      subText: "EXECUTE SEQUENCE CHRONOLOGICALLY PER PARAMETERS."
+    }
+  };
 
-const SCHEDULE = [
-  {
-    id: 'quest-1',
-    time: '08:00',
-    title: 'Morning sync — review overnight alerts',
-    tag: 'MAIN',
-  },
-  {
-    id: 'quest-2',
-    time: '12:30',
-    title: 'Log water intake checkpoint',
-    tag: 'SIDE',
-  },
-  {
-    id: 'quest-3',
-    time: '18:00',
-    title: 'Watch new anime episode drop',
-    tag: 'EVENT',
-  },
-  {
-    id: 'quest-4',
-    time: '21:00',
-    title: 'Journal debrief before shutdown',
-    tag: 'SIDE',
-  },
-]
-
-const QUICK_LINKS = [
-  {
-    id: 'tracker',
-    label: 'Tracker',
-    description: 'Water & habits',
-    icon: Activity,
-    page: 'tracker',
-  },
-  {
-    id: 'journal',
-    label: 'Journal',
-    description: 'Notes & stickers',
-    icon: BookOpen,
-    page: 'journal',
-  },
-  {
-    id: 'pro',
-    label: 'Pro Dashboard',
-    description: 'LinkedIn & LeetCode',
-    icon: Briefcase,
-    page: 'pro',
-  },
-]
-
-function Dashboard({ onNavigate }) {
   return (
-    <section className="min-h-[calc(100dvh-4.5rem)] overflow-y-auto bg-black text-left text-zinc-100">
-      <div className="mx-auto w-full max-w-2xl px-4 py-8 pb-16 sm:px-6">
-        {/* Header strip */}
-        <motion.header
-          custom={0}
-          initial="hidden"
-          animate="visible"
-          variants={panelVariants}
-          className="mb-8 border-b border-white/10 pb-6"
-        >
-          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.45em] text-red-400/80">
-            Episode 01 · System Online
-          </p>
-          <h1 className="text-3xl font-black uppercase tracking-tight text-white sm:text-4xl">
-            Command Center
-          </h1>
-          <p className="mt-2 text-sm text-zinc-500">
-            Scroll the panels. Complete the day&apos;s arc.
-          </p>
-        </motion.header>
+    <div className="relative min-h-screen bg-[#0d0d0d] text-white font-sans overflow-hidden select-none">
+      
+      {/* Precision Styles for the Jagged Shard Layout and Animations */}
+      <style>{`
+        @keyframes p5-blade-extend {
+          0% { transform: scaleX(0) skewX(-10deg); background-color: #000000; opacity: 0; }
+          30% { transform: scaleX(1.1) skewX(-10deg); background-color: #000000; opacity: 1; }
+          60% { transform: scaleX(0.95) skewX(-10deg); background-color: #dc2626; }
+          100% { transform: scaleX(1) skewX(-10deg); }
+        }
 
-        <div className="flex flex-col gap-5">
-          {/* Daily Reminders — character + dialogue bubble */}
-          <motion.article
-            custom={1}
-            initial="hidden"
-            animate="visible"
-            variants={panelVariants}
-            className="overflow-hidden border border-white/10 bg-white/[0.04] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-md"
+        @keyframes p5-text-slide {
+          0% { opacity: 0; transform: translateX(15px); }
+          100% { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes p5-view-entrance {
+          0% { opacity: 0; transform: scale(0.96) rotate(-1deg); }
+          100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+
+        /* Top white shard: Sharp lightning indicator tail point at (100% 48%) */
+        .clip-top-blade {
+          clip-path: polygon(0% 18%, 82% 2%, 84% 24%, 100% 48%, 83% 62%, 85% 100%, 2% 88%);
+        }
+
+        /* Bottom black shard: Lower dramatic tail hook point at (100% 64%) */
+        .clip-bottom-blade {
+          clip-path: polygon(3% 0%, 80% 12%, 81% 38%, 100% 64%, 79% 78%, 81% 100%, 0% 86%);
+        }
+      `}</style>
+
+      {/* High-Contrast Background Elements */}
+      <div className="absolute inset-0 bg-gradient-to-br from-black via-[#141414] to-black z-0" />
+      <div className="absolute -top-40 -right-20 w-8/12 h-[120%] bg-red-700/10 transform rotate-12 origin-top-right pointer-events-none z-0" />
+
+      {/* Main Structural Framework */}
+      <div className="relative max-w-7xl mx-auto h-screen grid grid-cols-1 lg:grid-cols-12 p-4 md:p-12 z-10 items-center gap-8">
+        
+        {/* NAV CONTROLLER PANEL */}
+        <div className="lg:col-span-5 flex flex-col gap-4 justify-center z-20">
+          
+          <div className="bg-red-600 text-black font-black text-2xl md:text-3xl px-6 py-2 tracking-tighter uppercase inline-block -rotate-3 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] w-max mb-6">
+            SYSTEM // INTERFACE
+          </div>
+
+          {/* Today's Goals Control */}
+          <button 
+            onClick={() => setActiveScreen('goals')}
+            className="group relative text-left transform -skew-x-12 -rotate-1 transition-all duration-150 active:scale-95 w-full max-w-sm"
           >
-            <div className="flex items-center gap-2 border-b border-white/10 px-4 py-3">
-              <Sparkles className="size-4 text-purple-400" strokeWidth={2.5} />
-              <h2 className="text-xs font-black uppercase tracking-[0.35em] text-zinc-300">
-                Daily Reminders
-              </h2>
+            <div className={`absolute inset-0 bg-red-600 translate-x-1 translate-y-1 transition-transform ${activeScreen === 'goals' ? 'translate-x-2 translate-y-2' : 'group-hover:translate-x-2 group-hover:translate-y-2'}`} />
+            <div className={`relative font-black text-lg md:text-xl px-6 py-4 uppercase tracking-wide border-2 transition-all ${activeScreen === 'goals' ? 'bg-white text-black border-black' : 'bg-black text-white border-white group-hover:text-red-500'}`}>
+              <span className="text-red-600 mr-4 font-mono text-xs">01</span>
+              Today's Goals
             </div>
+          </button>
 
-            <div className="flex flex-col items-stretch gap-6 p-5 sm:flex-row sm:items-center">
-              {/* Anime character silhouette */}
-              <div className="flex shrink-0 justify-center sm:w-36">
-                <div
-                  aria-hidden
-                  className="relative flex h-40 w-32 items-end justify-center overflow-hidden border border-purple-500/30 bg-gradient-to-b from-purple-950/60 via-black to-black shadow-[0_0_40px_rgba(147,51,234,0.15)]"
-                >
-                  <div className="absolute inset-x-4 top-5 h-16 rounded-full bg-gradient-to-b from-zinc-600 to-zinc-800 shadow-inner" />
-                  <div className="absolute inset-x-2 bottom-0 h-24 rounded-t-[40%] bg-gradient-to-b from-zinc-700 to-zinc-900" />
-                  <div className="absolute left-1/2 top-[4.5rem] h-2 w-8 -translate-x-1/2 rounded-full bg-red-500/80 blur-[1px]" />
-                  <div className="absolute bottom-3 left-1/2 h-1 w-10 -translate-x-1/2 bg-purple-500/50" />
-                </div>
-              </div>
-
-              {/* Speech bubble */}
-              <div className="relative min-w-0 flex-1">
-                <div className="relative rounded-xl border border-white/15 bg-white/[0.06] px-5 py-4 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-sm sm:ml-2">
-                  <div
-                    aria-hidden
-                    className="absolute -left-2 top-1/2 hidden h-0 w-0 -translate-y-1/2 border-y-[10px] border-r-[12px] border-y-transparent border-r-white/[0.06] sm:block"
-                  />
-                  <div
-                    aria-hidden
-                    className="absolute -left-[9px] top-1/2 hidden h-0 w-0 -translate-y-1/2 border-y-[10px] border-r-[12px] border-y-transparent border-r-white/15 sm:block"
-                    style={{ marginLeft: '-1px' }}
-                  />
-                  <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.3em] text-red-400/90">
-                    Operator
-                  </p>
-                  <p className="text-sm font-medium leading-relaxed text-zinc-200 sm:text-base">
-                    System initialized. Clear your daily objectives, or face the
-                    penalty.
-                  </p>
-                  <p className="mt-3 text-xs leading-relaxed text-zinc-500">
-                    Three quests remain on today&apos;s board. Hydration log is
-                    overdue — don&apos;t make me repeat myself.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </motion.article>
-
-          {/* Today's Schedule — quest log */}
-          <motion.article
-            custom={2}
-            initial="hidden"
-            animate="visible"
-            variants={panelVariants}
-            className="overflow-hidden border border-white/10 bg-white/[0.04] backdrop-blur-md"
+          {/* Initial Task Control */}
+          <button 
+            onClick={() => setActiveScreen('initial')}
+            className="group relative text-left transform -skew-x-12 rotate-2 transition-all duration-150 active:scale-95 w-full max-w-sm"
           >
-            <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-              <h2 className="text-xs font-black uppercase tracking-[0.35em] text-zinc-300">
-                Today&apos;s Schedule
-              </h2>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">
-                Quest Log
-              </span>
+            <div className={`absolute inset-0 bg-red-600 translate-x-1 translate-y-1 transition-transform ${activeScreen === 'initial' ? 'translate-x-2 translate-y-2' : 'group-hover:translate-x-2 group-hover:translate-y-2'}`} />
+            <div className={`relative font-black text-lg md:text-xl px-6 py-4 uppercase tracking-wide border-2 transition-all ${activeScreen === 'initial' ? 'bg-white text-black border-black' : 'bg-black text-white border-white group-hover:text-red-500'}`}>
+              <span className="text-red-600 mr-4 font-mono text-xs">02</span>
+              Initial Task
             </div>
+          </button>
 
-            <ul className="divide-y divide-white/[0.06]">
-              {SCHEDULE.map((item, index) => (
-                <motion.li
-                  key={item.id}
-                  initial={{ opacity: 0, x: -12 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{
-                    delay: 0.35 + index * 0.08,
-                    duration: 0.4,
-                    ease: 'easeOut',
-                  }}
-                  className="group flex items-start gap-4 px-4 py-4 transition-colors hover:bg-white/[0.03]"
-                >
-                  <div className="flex shrink-0 flex-col items-center pt-0.5">
-                    <Circle
-                      className="size-3 fill-red-500/20 text-red-500/60"
-                      strokeWidth={2}
-                    />
-                    {index < SCHEDULE.length - 1 && (
-                      <div className="mt-1 h-full min-h-6 w-px bg-gradient-to-b from-white/20 to-transparent" />
-                    )}
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <div className="mb-1 flex flex-wrap items-center gap-2">
-                      <span className="font-mono text-[11px] font-bold text-purple-400/90">
-                        {item.time}
-                      </span>
-                      <span className="rounded border border-white/10 bg-black/40 px-1.5 py-0.5 text-[9px] font-black tracking-widest text-zinc-500">
-                        {item.tag}
-                      </span>
-                    </div>
-                    <p className="text-sm font-semibold text-zinc-200 group-hover:text-white">
-                      {item.title}
-                    </p>
-                  </div>
-
-                  <ChevronRight className="mt-1 size-4 shrink-0 text-zinc-700 transition-colors group-hover:text-zinc-400" />
-                </motion.li>
-              ))}
-            </ul>
-          </motion.article>
-
-          {/* Quick Access */}
-          <motion.section
-            custom={3}
-            initial="hidden"
-            animate="visible"
-            variants={panelVariants}
-            className="overflow-hidden border border-white/10 bg-white/[0.04] backdrop-blur-md"
+          {/* Start Workout Control */}
+          <button 
+            onClick={() => setActiveScreen('workout')}
+            className="group relative text-left transform -skew-x-12 -rotate-2 transition-all duration-150 active:scale-95 w-full max-w-sm"
           >
-            <div className="border-b border-white/10 px-4 py-3">
-              <h2 className="text-xs font-black uppercase tracking-[0.35em] text-zinc-300">
-                Quick Access
-              </h2>
+            <div className={`absolute inset-0 bg-red-600 translate-x-1 translate-y-1 transition-transform ${activeScreen === 'workout' ? 'translate-x-2 translate-y-2' : 'group-hover:translate-x-2 group-hover:translate-y-2'}`} />
+            <div className={`relative font-black text-lg md:text-xl px-6 py-4 uppercase tracking-wide border-2 transition-all ${activeScreen === 'workout' ? 'bg-white text-black border-black' : 'bg-black text-white border-white group-hover:text-red-500'}`}>
+              <span className="text-red-600 mr-4 font-mono text-xs">03</span>
+              Start Workout
             </div>
+          </button>
 
-            <div className="grid gap-3 p-4 sm:grid-cols-3">
-              {QUICK_LINKS.map((link, index) => {
-                const Icon = link.icon
-
-                return (
-                  <motion.button
-                    key={link.id}
-                    type="button"
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 + index * 0.1, duration: 0.4 }}
-                    whileHover={{ y: -2 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => onNavigate?.(link.page)}
-                    className="group flex flex-col items-start gap-3 border border-white/10 bg-black/50 px-4 py-4 text-left transition-all hover:border-purple-500/40 hover:bg-white/[0.04] hover:shadow-[0_0_24px_rgba(147,51,234,0.12)]"
-                  >
-                    <div className="flex w-full items-center justify-between">
-                      <Icon
-                        className="size-5 text-red-400/90 transition-colors group-hover:text-purple-400"
-                        strokeWidth={2}
-                      />
-                      <ChevronRight className="size-4 text-zinc-700 group-hover:text-zinc-400" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold uppercase tracking-wide text-zinc-200">
-                        {link.label}
-                      </p>
-                      <p className="mt-0.5 text-[11px] text-zinc-600">
-                        {link.description}
-                      </p>
-                    </div>
-                  </motion.button>
-                )
-              })}
+          {/* Today's Schedule Control */}
+          <button 
+            onClick={() => setActiveScreen('schedule')}
+            className="group relative text-left transform -skew-x-12 rotate-1 transition-all duration-150 active:scale-95 w-full max-w-sm"
+          >
+            <div className={`absolute inset-0 bg-red-600 translate-x-1 translate-y-1 transition-transform ${activeScreen === 'schedule' ? 'translate-x-2 translate-y-2' : 'group-hover:translate-x-2 group-hover:translate-y-2'}`} />
+            <div className={`relative font-black text-lg md:text-xl px-6 py-4 uppercase tracking-wide border-2 transition-all ${activeScreen === 'schedule' ? 'bg-white text-black border-black' : 'bg-black text-white border-white group-hover:text-red-500'}`}>
+              <span className="text-red-600 mr-4 font-mono text-xs">04</span>
+              Today's Schedule
             </div>
-          </motion.section>
+          </button>
+
         </div>
-      </div>
-    </section>
-  )
-}
 
-export default Dashboard
+        {/* WORKSPACE AREA & OPERATIONAL SHARDS */}
+        <div className="lg:col-span-7 h-full flex flex-col justify-between py-4 md:py-8 relative z-10">
+          
+          {/* FUNCTIONAL MONITOR AREA */}
+          <div className="flex-1 flex items-center justify-center p-2">
+            
+            {activeScreen === 'goals' && (
+              <div style={{ animation: 'p5-view-entrance 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards' }} className="bg-black border-2 border-red-600 transform -skew-x-6 p-6 w-full max-w-md shadow-[6px_6px_0px_0px_rgba(220,38,38,0.3)]">
+                <div className="text-red-500 font-mono text-xs tracking-widest mb-3 uppercase">// CURRENT OBJECTIVES</div>
+                <ul className="space-y-3 font-black text-base uppercase tracking-tight">
+                  <li className="flex items-center gap-3 bg-neutral-900/90 p-2 border-l-4 border-red-600">✕ Master React Complex State</li>
+                  <li className="flex items-center gap-3 bg-neutral-900/90 p-2 border-l-4 border-red-600">✕ Push Clean Core Architecture to GitHub</li>
+                  <li className="flex items-center gap-3 bg-neutral-900/90 p-2 border-l-4 border-red-600">✕ Deploy Initial Dashboard Matrix</li>
+                </ul>
+              </div>
+            )}
+
+            {activeScreen === 'initial' && (
+              <div style={{ animation: 'p5-view-entrance 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards' }} className="bg-white text-black border-4 border-black transform -skew-x-3 p-6 w-full max-w-md shadow-[6px_6px_0px_0px_#000]">
+                <div className="bg-red-600 text-white font-mono text-xs px-2 py-0.5 tracking-widest uppercase inline-block mb-3 font-bold">CRITICAL OPERATION</div>
+                <h3 className="font-black text-2xl md:text-3xl uppercase tracking-tighter mb-1">DRINK WATER, GET FRESH</h3>
+                <p className="font-medium text-sm text-neutral-700 leading-tight">This operational parameters check-in is static and non-negotiable. Maintain systemic physical balance prior to loading high-stress workloads.</p>
+              </div>
+            )}
+
+            {activeScreen === 'workout' && (
+              <div style={{ animation: 'p5-view-entrance 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards' }} className="bg-black border-2 border-white transform -skew-x-6 p-6 w-full max-w-xl text-left shadow-[6px_6px_0px_0px_#fff] grid grid-cols-1 md:grid-cols-12 gap-6">
+                
+                {/* Countdown Wing */}
+                <div className="md:col-span-5 flex flex-col justify-center items-center border-b-2 md:border-b-0 md:border-r-2 border-neutral-800 pb-4 md:pb-0 md:pr-4">
+                  <div className="text-red-600 font-mono text-xs tracking-widest uppercase mb-1">// TIME REMAINING</div>
+                  <div className="font-mono text-4xl md:text-5xl font-black tracking-tighter text-white my-2 tabular-nums">
+                    {formatTime(workoutSeconds)}
+                  </div>
+                  <button className="bg-red-600 text-black font-black text-xs px-4 py-2 uppercase tracking-wide transform skew-x-12 border border-black hover:bg-white transition-colors w-full mt-2">
+                    ABORT OPERATION
+                  </button>
+                </div>
+
+                {/* Workout Plan Layout Area (Can customize later) */}
+                <div className="md:col-span-7 pl-0 md:pl-2 flex flex-col justify-between">
+                  <div>
+                    <div className="text-red-500 font-mono text-xs tracking-widest uppercase mb-2">// COMBAT CONDITIONING PLAN</div>
+                    <ul className="space-y-2 font-black text-xs md:text-sm uppercase tracking-tight text-neutral-400">
+                      <li className="flex justify-between items-center bg-neutral-900/80 p-2 border-l-2 border-white text-white">
+                        <span>01 // PUSH COMPONENT</span>
+                        <span className="font-mono text-red-500">4 SETS</span>
+                      </li>
+                      <li className="flex justify-between items-center bg-neutral-900/40 p-2 border-l-2 border-neutral-700">
+                        <span>02 // PULL PROTOCOL</span>
+                        <span className="font-mono text-neutral-500">3 SETS</span>
+                      </li>
+                      <li className="flex justify-between items-center bg-neutral-900/40 p-2 border-l-2 border-neutral-700">
+                        <span>03 // CORE SEVERITY</span>
+                        <span className="font-mono text-neutral-500">TO FAILURE</span>
+                      </li>
+                    </ul>
+                  </div>
+                  <div className="mt-3 text-[10px] text-neutral-600 font-mono tracking-wider uppercase italic">
+                    * Layout segment secured. Routine arrays can be customized later.
+                  </div>
+                </div>
+
+              </div>
+            )}
+
+            {activeScreen === 'schedule' && (
+              <div style={{ animation: 'p5-view-entrance 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards' }} className="bg-gradient-to-br from-neutral-900 to-black border-2 border-neutral-800 p-6 w-full max-w-md transform -skew-x-6">
+                <div className="text-red-500 font-mono text-xs tracking-widest uppercase mb-4">// CHRONOLOGICAL OPERATIONAL TIMELINE</div>
+                <div className="space-y-3 font-black text-xs md:text-sm tracking-tight uppercase">
+                  <div className="flex justify-between border-b border-neutral-800 pb-1.5"><span className="text-neutral-400">07:00 AM</span> <span className="text-white">Wake Matrix Initialization</span></div>
+                  <div className="flex justify-between border-b border-neutral-800 pb-1.5"><span className="text-red-500">09:00 AM</span> <span className="text-white">Core Development Operations</span></div>
+                  <div className="flex justify-between border-b border-neutral-800 pb-1.5"><span className="text-neutral-400">04:00 PM</span> <span className="text-white">Data Structures & Algo Drill</span></div>
+                  <div className="flex justify-between pb-0.5"><span className="text-neutral-400">09:00 PM</span> <span className="text-white">Combat Workout Loop</span></div>
+                </div>
+              </div>
+            )}
+
+          </div>
+
+          {/* TAILED HORIZONTAL SHARD ENGINE */}
+          <div className="relative w-full max-w-lg mx-auto lg:mr-0 flex flex-col gap-2 mt-4 items-end">
+            
+            {/* TOP SHARD WITH DIRECTIONAL TAIL POINT */}
+            <div className="relative w-full h-16 transform origin-right">
+              <div className="absolute inset-0 bg-black clip-top-blade translate-x-1.5 translate-y-1 pointer-events-none" />
+              
+              <div 
+                key={`top-${activeScreen}`} 
+                className="absolute inset-0 bg-white border-2 border-black clip-top-blade flex items-center pl-6 pr-16"
+                style={{
+                  transformOrigin: 'right center',
+                  animation: 'p5-blade-extend 0.45s cubic-bezier(0.19, 1, 0.22, 1) forwards'
+                }}
+              >
+                <span 
+                  className="text-black font-black font-mono text-xs md:text-sm tracking-tighter uppercase"
+                  style={{
+                    opacity: 0,
+                    animation: 'p5-text-slide 0.3s ease-out 0.45s forwards'
+                  }}
+                >
+                  {systemDialogue[activeScreen].prompt}
+                </span>
+              </div>
+            </div>
+
+            {/* LOWER SHARD WITH LOWER DIRECTIONAL TAIL HOOK */}
+            <div className="relative w-full h-16 transform origin-right -mt-1">
+              <div className="absolute inset-0 bg-red-600 clip-bottom-blade translate-x-0.5 translate-y-0.5 pointer-events-none" />
+              
+              <div 
+                key={`bottom-${activeScreen}`} 
+                className="absolute inset-0 bg-black border border-white clip-bottom-blade flex items-center pl-6 pr-16 justify-between"
+                style={{
+                  transformOrigin: 'right center',
+                  animation: 'p5-blade-extend 0.5s cubic-bezier(0.19, 1, 0.22, 1) forwards'
+                }}
+              >
+                <p 
+                  className="text-white font-mono font-black text-[11px] md:text-xs tracking-tight italic uppercase"
+                  style={{
+                    opacity: 0,
+                    animation: 'p5-text-slide 0.3s ease-out 0.5s forwards'
+                  }}
+                >
+                  "{systemDialogue[activeScreen].subText}"
+                </p>
+                
+                <span 
+                  className="text-red-500 font-black text-sm animate-pulse font-mono hidden md:inline"
+                  style={{
+                    opacity: 0,
+                    animation: 'p5-text-slide 0.3s ease-out 0.5s forwards'
+                  }}
+                >
+                  ►
+                </span>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  );
+}
