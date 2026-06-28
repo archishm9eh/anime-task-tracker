@@ -1,20 +1,38 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
+// 1. Import your quotes array cleanly
+import { selfCareQuotes } from '../data/quotes' 
 
-const TEXT = 'Welcome to the Borderland'
+// 2. Renamed to avoid name collision with the imported array
+function getQuoteOfTheDay() {
+  if (!selfCareQuotes || selfCareQuotes.length === 0) {
+    return 'Welcome to the Borderland' // Fallback text
+  }
+  
+  const today = new Date()
+  // Generates a unique number per day to use as an array index
+  const daySeed = today.getFullYear() * 365 + today.getMonth() * 31 + today.getDate()
+  const quoteIndex = daySeed % selfCareQuotes.length
+  
+  return selfCareQuotes[quoteIndex]
+}
+
+// 3. Call the newly renamed function safely
+const TEXT = getQuoteOfTheDay()
+
 const PARTICLE_STEP = 2
 const BRUSH_RADIUS = 60
 const REPEL_STRENGTH = 9
 const RETURN_SPRING = 0.09
 const RETURN_FRICTION = 0.8
-const CANVAS_PADDING = 56
+const CANVAS_PADDING = 40
 const FONT_FAMILY = '"Arial Black", Arial, sans-serif'
 const FONT_WEIGHT = 900
 const ALPHA_THRESHOLD = 90
 const HOME_SNAP_DISTANCE = 1
 
 function getFontSize(logicalWidth) {
-  return Math.min(Math.max(logicalWidth * 0.05, 30), 58)
+  return Math.min(Math.max(logicalWidth * 0.05, 24), 52)
 }
 
 function buildFont(logicalWidth) {
@@ -33,6 +51,32 @@ function particleColor(normalizedX) {
     g: mixColor(red[1], purple[1], normalizedX),
     b: mixColor(red[2], purple[2], normalizedX),
   }
+}
+
+// Completely re-written layout splitter to handle every character cleanly
+function getWrappedLines(ctx, text, maxWidth) {
+  const words = text.split(' ')
+  const lines = []
+  let currentLine = ''
+
+  for (let i = 0; i < words.length; i++) {
+    const word = words[i]
+    const testLine = currentLine ? currentLine + ' ' + word : word
+    const width = ctx.measureText(testLine).width
+    
+    if (width < maxWidth) {
+      currentLine = testLine
+    } else {
+      if (currentLine) {
+        lines.push(currentLine)
+      }
+      currentLine = word
+    }
+  }
+  if (currentLine) {
+    lines.push(currentLine)
+  }
+  return lines
 }
 
 function createParticle(homeX, homeY, size, color) {
@@ -78,10 +122,35 @@ function createParticlesFromText(logicalWidth, logicalHeight, text, dpr) {
   sampleCtx.setTransform(dpr, 0, 0, dpr, 0, 0)
   sampleCtx.clearRect(0, 0, logicalWidth, logicalHeight)
   sampleCtx.fillStyle = '#ffffff'
-  sampleCtx.font = buildFont(logicalWidth)
-  sampleCtx.textAlign = 'center'
+  
+  const fontSize = getFontSize(logicalWidth)
+  const fontSpec = buildFont(logicalWidth)
+  sampleCtx.font = fontSpec
   sampleCtx.textBaseline = 'middle'
-  sampleCtx.fillText(text, logicalWidth / 2, logicalHeight / 2)
+
+  // Reserve explicit layout space margins inside the bounding area
+  const maxTextWidth = Math.max(logicalWidth - 160, 200)
+  
+  sampleCtx.textAlign = 'left'
+  const lines = getWrappedLines(sampleCtx, text, maxTextWidth)
+  
+  let maxLineWidth = 0
+  lines.forEach(line => {
+    const w = sampleCtx.measureText(line).width
+    if (w > maxLineWidth) maxLineWidth = w
+  })
+
+  const lineHeight = fontSize * 1.3
+  const totalTextHeight = lines.length * lineHeight
+  const startY = (logicalHeight - totalTextHeight) / 2 + lineHeight / 2
+  
+  const globalStartX = (logicalWidth - maxLineWidth) / 2
+
+  lines.forEach((line, index) => {
+    const currentLineWidth = sampleCtx.measureText(line).width
+    const lineOffsetX = (maxLineWidth - currentLineWidth) / 2
+    sampleCtx.fillText(line, globalStartX + lineOffsetX, startY + index * lineHeight)
+  })
 
   const imageData = sampleCtx.getImageData(0, 0, canvasWidth, canvasHeight).data
   const particles = []
@@ -117,13 +186,26 @@ function measureCanvasSize(containerWidth, text) {
 
   const maxWidth = Math.min(containerWidth - 32, 980)
   const fontSize = getFontSize(maxWidth)
-
   measureCtx.font = buildFont(maxWidth)
-  const metrics = measureCtx.measureText(text)
+  measureCtx.textAlign = 'left'
+
+  const maxTextWidth = Math.max(maxWidth - 160, 200)
+  const lines = getWrappedLines(measureCtx, text, maxTextWidth)
+  
+  let longestLineWidth = 0
+  lines.forEach(line => {
+    const lineWidth = measureCtx.measureText(line).width
+    if (lineWidth > longestLineWidth) {
+      longestLineWidth = lineWidth
+    }
+  })
+
+  const lineHeight = fontSize * 1.3
+  const calculatedHeight = Math.ceil(lines.length * lineHeight + CANVAS_PADDING * 2)
 
   return {
-    width: Math.ceil(metrics.width + CANVAS_PADDING * 2),
-    height: Math.ceil(fontSize * 1.85 + CANVAS_PADDING),
+    width: Math.ceil(longestLineWidth + 160),
+    height: calculatedHeight < 140 ? 170 : calculatedHeight,
   }
 }
 
@@ -153,7 +235,6 @@ function updateParticle(particle, mouse, dpr) {
   const homeDy = particle.homeY - particle.y
   const homeDistance = Math.hypot(homeDx, homeDy)
 
-  // Hit-test against the letter's home position so the brush tracks visible text.
   const brushDx = particle.homeX - mouse.x
   const brushDy = particle.homeY - mouse.y
   const brushDistance = Math.hypot(brushDx, brushDy)
@@ -169,7 +250,6 @@ function updateParticle(particle, mouse, dpr) {
     particle.vx += (pushX / pushDistance) * repel
     particle.vy += (pushY / pushDistance) * repel
 
-    // Weaker spring while brushing so repulsion can visibly displace particles.
     particle.vx += homeDx * RETURN_SPRING * 0.12
     particle.vy += homeDy * RETURN_SPRING * 0.12
     particle.vx *= RETURN_FRICTION
@@ -225,9 +305,14 @@ function LoadingScreen({ onInitialize }) {
       return
     }
 
-    await document.fonts.ready
+    try {
+      await Promise.race([
+        document.fonts.ready,
+        new Promise((resolve) => setTimeout(resolve, 350))
+      ])
+    } catch (e) {}
 
-    const layoutWidth = container.clientWidth || 860
+    const layoutWidth = container.clientWidth || window.innerWidth || 860
     const { width, height } = measureCanvasSize(layoutWidth, TEXT)
     const dpr = window.devicePixelRatio || 1
 
